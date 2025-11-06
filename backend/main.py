@@ -1,22 +1,28 @@
 import sys,os
 from datetime import datetime
 import pytz
-
+import json
 from fastapi import FastAPI
 import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from scripts.unify import unify
+from scripts.fetch_historic import fetch_historical_data
 from db.models import TechnicalIndicators
 from db.database import SessionLocal,engine
 ist_timezone = pytz.timezone('Asia/Kolkata')
 app=FastAPI()
+
+def paginate_data(data,offset,limit):
+    start=offset
+    end=offset+limit
+    return data[start:end]
 
 @app.get('/')
 def main():
     return {'message':'This is Tradeforge - a live trading simulator'}
 
 @app.get('/latest-features/{symbol}')
-def latest_features(symbol):
+async def latest_features(symbol):
     unify(symbol)
     current_time_ist = datetime.now(ist_timezone)
 
@@ -56,4 +62,15 @@ def latest_features(symbol):
     }
     
     return formatted_output
+
+@app.get('/historical-data/{symbol}')
+def historical_data(symbol,start_date,end_date,offset=0,limit=50):
+    df=fetch_historical_data(symbol=symbol,start_date=start_date,end_date=end_date)
+    df['Date'] = df['Date'].astype(str)
+    json_string=df.to_json(orient='records')
+    json_string=json.loads(json_string)
+    paginated_data=paginate_data(json_string,offset,limit)
+    return paginated_data
+
+
 

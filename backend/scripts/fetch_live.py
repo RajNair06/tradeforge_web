@@ -3,9 +3,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import yfinance as yf
 from db.database import SessionLocal
 from db.models import LivePrice,StockMetadata
-from datetime import datetime,timezone
+from datetime import datetime,timedelta
 
-POLL_INTERVAL=30
+# POLL_INTERVAL=30
+# RUN_FOR_MINUTES=2
+# END_TIME=datetime.now()+timedelta(minutes=RUN_FOR_MINUTES)
 
 def get_ticker_info(symbol:str):
     ticker=yf.Ticker(symbol)
@@ -36,15 +38,16 @@ def update_metadata(db, symbol: str, info: dict):
         print(f"Metadata updated for {symbol} | {meta.currency}")
         
 
-def main():
-    SYMBOL=input("Enter ticker symbol(Add relevant suffixes to specify exchance ex: add .BO for BSE and .NS for NSE): ")
-    print(f"Starting live polling for {SYMBOL} every {POLL_INTERVAL}s...")
+def fetch_live(symbol):
+    SYMBOL=symbol
+    # print(f"Starting live polling for {SYMBOL} every {POLL_INTERVAL}s...")
+    print(f'Fetching live data for {SYMBOL}...')
     info=get_ticker_info(SYMBOL)
 
     with SessionLocal() as db:
         update_metadata(db,SYMBOL,info)
-        while True:
-            try:
+        # while datetime.now()<END_TIME:
+        try:
                 ticker=get_ticker_info(SYMBOL)
                 price=ticker.get("regularMarketPrice")
                 currency=ticker.get("currency","UNKNOWN")
@@ -56,12 +59,12 @@ def main():
                 else:
                         print(f"No price data at {time.strftime('%H:%M:%S')}")
                     
-            except Exception as e:
+        except Exception as e:
                 print(f"Error: {e}")
             
-            time.sleep(POLL_INTERVAL)
+        # time.sleep(POLL_INTERVAL)
 
 
 if __name__=="__main__":
-    main()
+    fetch_live()
     

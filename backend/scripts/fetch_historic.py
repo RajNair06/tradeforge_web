@@ -27,7 +27,8 @@ def fetch_historical_data(symbol: str, start_date: str, end_date: str):
         print(df.columns)
 
         df['Symbol']=symbol
-        df.to_csv(f'data/{symbol}_{(end_date-start_date).days}_days.csv')
+        
+        # df.to_csv(f'data/{symbol}_{(end_date-start_date).days}_days.csv')
         
         
     
@@ -61,8 +62,8 @@ def fetch_historical_data(symbol: str, start_date: str, end_date: str):
 
 if __name__ == "__main__":
     symbol ='RELIANCE.BO' #input("Enter ticker symbol(add suffix .BO to fetch from BSE): ")
-    start_date ='2024-10-19' #input("Enter start date in the format YYYY-MM-DD: ")
-    end_date ='2025-10-19' # input("Enter end date in the format YYYY-MM-DD: ")
+    start_date ='2024-10-28' #input("Enter start date in the format YYYY-MM-DD: ")
+    end_date ='2025-10-29' # input("Enter end date in the format YYYY-MM-DD: ")
     data = fetch_historical_data(symbol, start_date, end_date)
     if data is not None:
         print(data.head())
