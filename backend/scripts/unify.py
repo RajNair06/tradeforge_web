@@ -8,10 +8,12 @@ from datetime import date,timedelta
 current_date=date.today()
 two_year_ago = current_date - timedelta(days=730)
 
-def unify(symbol):
-    fetch_historical_data(symbol,str(two_year_ago),str(current_date))
+def unify(symbol,start_date=str(two_year_ago),end_date=str(current_date)):
+    fetch_historical_data(symbol,start_date,end_date)
     fetch_live(symbol)
-    prep_data(symbol)
+    df=prep_data(symbol)
+    
+    return df
 
 
 

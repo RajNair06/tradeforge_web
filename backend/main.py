@@ -1,8 +1,11 @@
 import sys,os
-from datetime import datetime
+from datetime import datetime,timedelta,date
 import pytz
 import json
-from fastapi import FastAPI
+import httpx
+from redis import Redis
+from fastapi import FastAPI,HTTPException,Query
+from fastapi.responses import JSONResponse
 import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from scripts.unify import unify
@@ -12,10 +15,21 @@ from db.database import SessionLocal,engine
 ist_timezone = pytz.timezone('Asia/Kolkata')
 app=FastAPI()
 
+
+
 def paginate_data(data,offset,limit):
     start=offset
     end=offset+limit
     return data[start:end]
+
+@app.on_event("startup")
+async def startup_event():
+    app.state.redis=Redis(host='localhost',port=6379)
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    app.state.redis.close()
+
 
 @app.get('/')
 def main():
@@ -64,13 +78,61 @@ async def latest_features(symbol):
     return formatted_output
 
 @app.get('/historical-data/{symbol}')
-def historical_data(symbol,start_date,end_date,offset=0,limit=50):
-    df=fetch_historical_data(symbol=symbol,start_date=start_date,end_date=end_date)
-    df['Date'] = df['Date'].astype(str)
-    json_string=df.to_json(orient='records')
-    json_string=json.loads(json_string)
-    paginated_data=paginate_data(json_string,offset,limit)
-    return paginated_data
+async def historical_data(symbol,start_date,end_date,offset=0,limit=50):
+    value=app.state.redis.get(f'historical_data_{symbol}_{start_date}_to_{end_date}')
+
+    if value:
+        
+        cached_data = json.loads(value)
+        paginated_data = paginate_data(cached_data, offset, limit)
+        return paginated_data
+    else:
+        
+        df=fetch_historical_data(symbol=symbol,start_date=start_date,end_date=end_date)
+        df['Date'] = df['Date'].astype(str)
+        json_string=df.to_json(orient='records')
+        full_data=json.loads(json_string)
+        app.state.redis.set(f'historical_data_{symbol}_{start_date}_to_{end_date}',json.dumps(full_data))
+        paginated_data = paginate_data(full_data, offset, limit)
+        return paginated_data
 
 
 
+@app.get('/plotting/{symbol}/live')
+async def get_live_plotting_data(symbol: str, start_date: str, offset: int = 0, limit: int = 50):
+    """
+    Get plotting data for a symbol with caching and pagination
+    Returns the exact DataFrame structure from unify()
+    """
+    end_date=date.today()
+    cache_key = f'plotting_data_{symbol}_{start_date}_to_{end_date}'
+    value = app.state.redis.get(cache_key)
+
+    if value:
+        cached_data = json.loads(value)
+        paginated_data = paginate_data(cached_data, offset, limit)
+        return paginated_data
+    else:
+        # Get data from unify (which only takes symbol)
+        df = unify(symbol)
+        
+        # Convert timestamp to datetime for filtering
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        
+        # Convert query params to datetime
+        start_dt = pd.to_datetime(start_date)
+        end_dt = pd.to_datetime(end_date)
+        
+        # Filter DataFrame by date range
+        filtered_df = df[(df['timestamp'] >= start_dt) & (df['timestamp'] <= end_dt)]
+        
+        # Convert timestamp back to string for JSON serialization
+        filtered_df['timestamp'] = filtered_df['timestamp'].astype(str)
+        
+        
+        json_string = filtered_df.to_json(orient='records')
+        full_data = json.loads(json_string)
+        app.state.redis.setex(cache_key, 60, json.dumps(full_data))
+        paginated_data = paginate_data(full_data, offset, limit)
+        
+        return paginated_data

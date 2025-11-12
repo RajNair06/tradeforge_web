@@ -26,6 +26,7 @@ def prep_data(symbol):
         df['sma100'] = df['price'].rolling(100).mean()
         df['sma200'] = df['price'].rolling(200).mean()
         df=df.dropna()
+        
         # OUTPUT_CSV=f"data/ml_{symbol}_data.csv"
         # df.to_csv(OUTPUT_CSV)
         for _,row in df.iterrows():
@@ -46,6 +47,7 @@ def prep_data(symbol):
                     
             db.add(technical_indicators)
             db.commit()
+        return df
 
             
 
