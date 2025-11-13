@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ symbol }} Stock Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            color: #333;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls { 
+            text-align: center; 
+            margin: 20px 0; 
+        }
+        button {
+            padding: 10px 20px;
+            background: #2E86AB;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #1a5a7a;
+        }
+        .info-panel {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .info-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2E86AB;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-value {
+            font-size: 18px;
+            color: #333;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        .chart-container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        canvas {
+            width: 100% !important;
+            height: 500px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 {{ symbol }} Stock Analysis</h1>
+            <p>Date Range: {{ start_date }} to {{ end_date }} | Data Points: {{ data.timestamps|length }} | Interval: Daily</p>
+        </div>
+        
+        <div class="controls">
+            <button onclick="location.reload()">🔄 Refresh Chart</button>
+        </div>
+
+        <div class="info-panel">
+            <h2>📊 Current Market Data</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Current Price</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.price) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">SMA 20 Days</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.sma20) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">SMA 50 Days</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.sma50) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">SMA 100 Days</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.sma100) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">SMA 200 Days</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.sma200) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Price 1 Day Ago</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.lag1) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Price 2 Days Ago</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.lag2) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Price 3 Days Ago</div>
+                    <div class="info-value">₹{{ "%.2f"|format(current_data.lag3) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Last Updated</div>
+                    <div class="info-value">{{ current_data.timestamp }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="stockChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Data from backend
+        const timestamps = {{ data.timestamps | tojson }};
+        const prices = {{ data.prices | tojson }};
+        const sma20 = {{ data.sma20 | tojson }};
+        const sma50 = {{ data.sma50 | tojson }};
+        const sma100 = {{ data.sma100 | tojson }};
+        const sma200 = {{ data.sma200 | tojson }};
+
+        let chart;
+
+        function initChart() {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                            label: 'Stock Price',
+                            data: prices,
+                            borderColor: '#2E86AB',
+                            backgroundColor: 'rgba(46, 134, 171, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.1,
+                            pointRadius: 2,
+                            pointHoverRadius: 6,
+                            fill: true
+                        },
+                        {
+                            label: 'SMA 20',
+                            data: sma20,
+                            borderColor: '#A23B72',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'SMA 50',
+                            data: sma50,
+                            borderColor: '#F18F01',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'SMA 100',
+                            data: sma100,
+                            borderColor: '#C73E1D',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'SMA 200',
+                            data: sma200,
+                            borderColor: '#44AF69',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { 
+                                display: true, 
+                                text: 'Trading Days',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            grid: { 
+                                color: 'rgba(0,0,0,0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 20,
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: { size: 11 }
+                            }
+                        },
+                        y: {
+                            title: { 
+                                display: true, 
+                                text: 'Price (₹)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            beginAtZero: false,
+                            grid: { 
+                                color: 'rgba(0,0,0,0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                },
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '{{ symbol }} - Technical Analysis with Moving Averages',
+                            font: { size: 16, weight: 'bold' },
+                            padding: 20
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { size: 12 },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.1
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize chart when page loads
+        document.addEventListener('DOMContentLoaded', initChart);
+    </script>
+</body>
+</html>

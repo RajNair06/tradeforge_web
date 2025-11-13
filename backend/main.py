@@ -4,8 +4,10 @@ import pytz
 import json
 import httpx
 from redis import Redis
-from fastapi import FastAPI,HTTPException,Query
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI,HTTPException,Query,Request
+from fastapi.responses import JSONResponse,HTMLResponse
+
+from fastapi.templating import Jinja2Templates
 import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from scripts.unify import unify
@@ -14,6 +16,7 @@ from db.models import TechnicalIndicators
 from db.database import SessionLocal,engine
 ist_timezone = pytz.timezone('Asia/Kolkata')
 app=FastAPI()
+templates=Jinja2Templates(directory='templates')
 
 
 
@@ -98,41 +101,95 @@ async def historical_data(symbol,start_date,end_date,offset=0,limit=50):
 
 
 
-@app.get('/plotting/{symbol}/live')
-async def get_live_plotting_data(symbol: str, start_date: str, offset: int = 0, limit: int = 50):
-    """
-    Get plotting data for a symbol with caching and pagination
-    Returns the exact DataFrame structure from unify()
-    """
-    end_date=date.today()
-    cache_key = f'plotting_data_{symbol}_{start_date}_to_{end_date}'
-    value = app.state.redis.get(cache_key)
 
-    if value:
-        cached_data = json.loads(value)
-        paginated_data = paginate_data(cached_data, offset, limit)
-        return paginated_data
-    else:
-        # Get data from unify (which only takes symbol)
+
+@app.get('/plotting/{symbol}/live', response_class=HTMLResponse)
+async def get_live_plotting_data(
+    request: Request,
+    symbol: str, 
+    start_date: str, 
+    use_cache: bool = True
+):
+    """
+    Returns an HTML page with Chart.js plot, with caching support
+    """
+    end_date = date.today()
+    
+    # Cache keys
+    data_cache_key = f'plotting_data_{symbol}_{start_date}_to_{end_date}'
+    html_cache_key = f'plotting_html_{symbol}_{start_date}_to_{end_date}'
+    
+    # Try to get cached HTML first (fastest)
+    if use_cache:
+        cached_html = app.state.redis.get(html_cache_key)
+        if cached_html:
+            print("Returning cached HTML")
+            return HTMLResponse(content=cached_html.decode('utf-8'))
+    
+    # Try to get cached data
+    filtered_data = None
+    if use_cache:
+        cached_data = app.state.redis.get(data_cache_key)
+        if cached_data:
+            print("Using cached data")
+            filtered_data = json.loads(cached_data)
+    
+    # Fetch fresh data if no cache
+    if not filtered_data:
+        print("Fetching fresh data")
         df = unify(symbol)
-        
-        # Convert timestamp to datetime for filtering
         df['timestamp'] = pd.to_datetime(df['timestamp'])
-        
-        # Convert query params to datetime
         start_dt = pd.to_datetime(start_date)
-        end_dt = pd.to_datetime(end_date)
         
-        # Filter DataFrame by date range
-        filtered_df = df[(df['timestamp'] >= start_dt) & (df['timestamp'] <= end_dt)]
-        
-        # Convert timestamp back to string for JSON serialization
-        filtered_df['timestamp'] = filtered_df['timestamp'].astype(str)
+        filtered_df = df[df['timestamp'] >= start_dt]
         
         
-        json_string = filtered_df.to_json(orient='records')
-        full_data = json.loads(json_string)
-        app.state.redis.setex(cache_key, 60, json.dumps(full_data))
-        paginated_data = paginate_data(full_data, offset, limit)
+        # Convert to list format and cache
+        filtered_data = {
+            'timestamps': filtered_df['timestamp'].dt.strftime('%Y-%m-%d').tolist(),
+            'prices': filtered_df['price'].fillna(0).tolist(),
+            'sma20': filtered_df['sma20'].fillna(0).tolist(),
+            'sma50': filtered_df['sma50'].fillna(0).tolist(),
+            'sma100': filtered_df['sma100'].fillna(0).tolist(),
+            'sma200': filtered_df['sma200'].fillna(0).tolist(),
+            'lag1': filtered_df['lag1'].fillna(0).tolist(),
+            'lag2': filtered_df['lag2'].fillna(0).tolist(),
+            'lag3': filtered_df['lag3'].fillna(0).tolist()
+        }
         
-        return paginated_data
+        # Cache the data for 60 seconds
+        if use_cache:
+            app.state.redis.setex(data_cache_key, 60, json.dumps(filtered_data))
+    
+    # Get current data for display
+    last_index = len(filtered_data['timestamps']) - 1
+    current_data = {
+        'price': filtered_data['prices'][last_index] if last_index >= 0 else 0,
+        'sma20': filtered_data['sma20'][last_index] if last_index >= 0 else 0,
+        'sma50': filtered_data['sma50'][last_index] if last_index >= 0 else 0,
+        'sma100': filtered_data['sma100'][last_index] if last_index >= 0 else 0,
+        'sma200': filtered_data['sma200'][last_index] if last_index >= 0 else 0,
+        'lag1': filtered_data['lag1'][last_index] if last_index >= 0 else 0,
+        'lag2': filtered_data['lag2'][last_index] if last_index >= 0 else 0,
+        'lag3': filtered_data['lag3'][last_index] if last_index >= 0 else 0,
+        'timestamp': filtered_data['timestamps'][last_index] if last_index >= 0 else 'N/A'
+    }
+    
+    # Prepare context for template
+    context = {
+        "request": request,
+        "symbol": symbol,
+        "start_date": start_date,
+        "end_date": str(end_date),
+        "data": filtered_data,
+        "current_data": current_data
+    }
+    
+    # Render template
+    html_content = templates.TemplateResponse("create_plot.html", context).body.decode('utf-8')
+    
+    # Cache the HTML for 60 seconds
+    if use_cache:
+        app.state.redis.setex(html_cache_key, 60, html_content)
+    
+    return HTMLResponse(content=html_content)
