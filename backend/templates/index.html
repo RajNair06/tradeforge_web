@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeForge - Live Trading Simulator API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            margin-bottom: 40px;
+        }
+        .endpoint-card {
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+        .endpoint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .badge-get {
+            background-color: #28a745;
+        }
+        .badge-post {
+            background-color: #007bff;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .nav-tabs .nav-link.active {
+            border-bottom: 3px solid #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold">📈 TradeForge</h1>
+                    <p class="lead">Live Trading Simulator & Technical Analysis Platform</p>
+                    <p class="mb-4">Real-time stock data, technical indicators, and interactive charting for informed trading decisions</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge bg-light text-dark p-2">Real-time Data</span>
+                        <span class="badge bg-light text-dark p-2">Technical Indicators</span>
+                        <span class="badge bg-light text-dark p-2">Interactive Charts</span>
+                        <span class="badge bg-light text-dark p-2">Redis Caching</span>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Start Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="mb-4">🚀 Quick Start</h2>
+                <div class="code-block">
+                    <strong># Get latest technical indicators for a stock</strong><br>
+                    GET <span class="text-primary">/latest-features/TCS.BO</span><br><br>
+                    
+                    <strong># Get historical data with pagination</strong><br>
+                    GET <span class="text-primary">/historical-data/TCS.BO?start_date=2025-01-01&end_date=2025-11-13</span><br><br>
+                    
+                    <strong># Interactive chart with technical analysis</strong><br>
+                    GET <span class="text-primary">/plotting/TCS.BO/live?start_date=2025-10-01</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Endpoints -->
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4">🔗 API Endpoints</h2>
+                
+                <!-- Endpoint 1 -->
+                <div class="card endpoint-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">
+                                <span class="badge badge-get me-2">GET</span>
+                                /latest-features/{symbol}
+                            </h5>
+                            <span class="badge bg-success">Real-time</span>
+                        </div>
+                        <p class="card-text">Get the latest technical indicators and price data for a specific stock symbol.</p>
+                        
+                        <h6>Parameters:</h6>
+                        <ul>
+                            <li><code>{symbol}</code> - Stock symbol (e.g., TCS.BO, RELIANCE.BO, AAPL)</li>
+                        </ul>
+                        
+                        <h6>Example Request:</h6>
+                        <div class="code-block mb-3">
+                            GET /latest-features/TCS.BO
+                        </div>
+                        
+                        <h6>Example Response:</h6>
+                        <div class="code-block">
+                            {<br>
+                            &nbsp;&nbsp;"symbol": "TCS.BO",<br>
+                            &nbsp;&nbsp;"latest_features": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"basic_info": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"price": 3105.70,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"timestamp": "2025-11-13 12:49:46"<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"technical_indicators": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"sma_20": 3033.66,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"sma_50": 3031.65,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"sma_200": 3326.27<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endpoint 2 -->
+                <div class="card endpoint-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">
+                                <span class="badge badge-get me-2">GET</span>
+                                /historical-data/{symbol}
+                            </h5>
+                            <span class="badge bg-info">Cached</span>
+                        </div>
+                        <p class="card-text">Retrieve historical stock data with Redis caching and pagination support.</p>
+                        
+                        <h6>Parameters:</h6>
+                        <ul>
+                            <li><code>{symbol}</code> - Stock symbol</li>
+                            <li><code>start_date</code> - Start date (YYYY-MM-DD)</li>
+                            <li><code>end_date</code> - End date (YYYY-MM-DD)</li>
+                            <li><code>offset</code> - Pagination offset (default: 0)</li>
+                            <li><code>limit</code> - Pagination limit (default: 50)</li>
+                        </ul>
+                        
+                        <h6>Example Request:</h6>
+                        <div class="code-block mb-3">
+                            GET /historical-data/TCS.BO?start_date=2025-01-01&end_date=2025-11-13&offset=0&limit=100
+                        </div>
+                        
+                        <h6>Features:</h6>
+                        <ul>
+                            <li>✅ Redis caching (60 seconds)</li>
+                            <li>✅ Pagination support</li>
+                            <li>✅ Automatic data freshness</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Endpoint 3 -->
+                <div class="card endpoint-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">
+                                <span class="badge badge-get me-2">GET</span>
+                                /plotting/{symbol}/live
+                            </h5>
+                            <span class="badge bg-warning text-dark">Interactive</span>
+                        </div>
+                        <p class="card-text">Interactive Chart.js visualization with technical indicators and real-time data.</p>
+                        
+                        <h6>Parameters:</h6>
+                        <ul>
+                            <li><code>{symbol}</code> - Stock symbol</li>
+                            <li><code>start_date</code> - Start date (YYYY-MM-DD)</li>
+                            <li><code>use_cache</code> - Use cached data (default: true)</li>
+                        </ul>
+                        
+                        <h6>Example Request:</h6>
+                        <div class="code-block mb-3">
+                            GET /plotting/TCS.BO/live?start_date=2025-10-01
+                        </div>
+                        
+                        <h6>Features:</h6>
+                        <ul>
+                            <li>✅ Interactive Chart.js visualization</li>
+                            <li>✅ Multiple technical indicators (SMA 20, 50, 100, 200)</li>
+                            <li>✅ Price lags (1, 2, 3 days)</li>
+                            <li>✅ Current values display</li>
+                            <li>✅ Redis caching (60 seconds)</li>
+                            <li>✅ Automatic end date (today)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supported Symbols -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h2 class="mb-4">📊 Supported Symbols Example</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Indian Stocks (BSE)</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><code>TCS.BO</code> - Tata Consultancy Services</li>
+                                    <li class="list-group-item"><code>RELIANCE.BO</code> - Reliance Industries</li>
+                                    <li class="list-group-item"><code>HDFCBANK.BO</code> - HDFC Bank</li>
+                                    <li class="list-group-item"><code>INFY.BO</code> - Infosys</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">International Stocks</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item"><code>AAPL</code> - Apple Inc.</li>
+                                    <li class="list-group-item"><code>TSLA</code> - Tesla Inc.</li>
+                                    <li class="list-group-item"><code>MSFT</code> - Microsoft</li>
+                                    <li class="list-group-item"><code>GOOGL</code> - Alphabet (Google)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Indicators -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h2 class="mb-4">📈 Technical Indicators</h2>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-wave-square text-primary mb-3" style="font-size: 2rem;"></i>
+                                <h5>Moving Averages</h5>
+                                <p class="text-muted">SMA 5, 10, 20, 50, 100, 200 days</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-history text-success mb-3" style="font-size: 2rem;"></i>
+                                <h5>Price Lags</h5>
+                                <p class="text-muted">1, 2, 3 day price history</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-bolt text-warning mb-3" style="font-size: 2rem;"></i>
+                                <h5>Real-time Data</h5>
+                                <p class="text-muted">Live prices from yfinance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <hr>
+                <p class="text-muted">
+                    Built with FastAPI, Redis, Chart.js, and yfinance | 
+                    <a href="https://github.com/RajNair06/tradeforge_web" class="text-decoration-none">GitHub Repository</a> | A project by Raj Nair ♥️
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

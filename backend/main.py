@@ -34,9 +34,9 @@ async def shutdown_event():
     app.state.redis.close()
 
 
-@app.get('/')
-def main():
-    return {'message':'This is Tradeforge - a live trading simulator'}
+@app.get('/',response_class=HTMLResponse)
+def main(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get('/latest-features/{symbol}')
 async def latest_features(symbol):
