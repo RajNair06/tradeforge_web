@@ -114,6 +114,19 @@ async def get_live_plotting_data(
     Returns an HTML page with Chart.js plot, with caching support
     """
     end_date = date.today()
+    metadata_df=pd.read_sql(f"SELECT * FROM stock_metadata WHERE symbol='{symbol}' LIMIT 1 ",engine)
+
+    print(metadata_df.head())
+    print(metadata_df.columns)
+    name=metadata_df.iloc[0]['name']
+    sector=metadata_df.iloc[0]['sector']
+    industry=metadata_df.iloc[0]['industry']
+    market_cap=metadata_df.iloc[0]['market_cap']
+    pe_ratio=metadata_df.iloc[0]['pe_ratio']
+    currency=metadata_df.iloc[0]['currency']
+
+    
+
     
     # Cache keys
     data_cache_key = f'plotting_data_{symbol}_{start_date}_to_{end_date}'
@@ -182,7 +195,14 @@ async def get_live_plotting_data(
         "start_date": start_date,
         "end_date": str(end_date),
         "data": filtered_data,
-        "current_data": current_data
+        "current_data": current_data,
+        "name":name,
+        "sector":sector,
+        "industry":industry,
+        "market_cap":market_cap,
+        "currency":currency,
+        "pe_ratio":pe_ratio
+
     }
     
     # Render template
