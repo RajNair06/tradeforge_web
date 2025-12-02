@@ -18,6 +18,7 @@ COPY backend/ /app/
 
 # Make sure /app is on Python module search path
 ENV PYTHONPATH=/app
+RUN python -c "from db.init_db import init_db; init_db()"
 
 # Run as non-root (optional)
 RUN useradd --create-home appuser && chown -R appuser /app
