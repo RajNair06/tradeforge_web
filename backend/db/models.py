@@ -1,5 +1,5 @@
 from sqlalchemy import Column,Integer,String,Float,DateTime,ForeignKey
-from backend.db.database import Base
+from .database import Base
 from sqlalchemy.types import DateTime as SQLADateTime
 from datetime import datetime,timezone
 
