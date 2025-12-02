@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.venv/
+.vscode/
+.idea/
+.git
+node_modules
+backend/data/
+backend/notebooks/
+
