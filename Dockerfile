@@ -1,28 +1,27 @@
-# Use an official Python runtime
 FROM python:3.11-slim
 
-# Avoid interactive prompts during builds
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Workdir inside container
 WORKDIR /app
 
+# Install minimal system deps (keep if you have compiled packages)
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    build-essential gcc libpq-dev ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
-
-# Copy only requirements first to leverage Docker cache
+# Copy only requirements first for cache
 COPY backend/requirements.txt /app/requirements.txt
-
-# Upgrade pip and install Python deps
 RUN python -m pip install --upgrade pip setuptools wheel \
  && python -m pip install -r /app/requirements.txt
 
-# Copy the backend app
+# Copy app code into /app so main.py and db/ are siblings
 COPY backend/ /app/
 
+# Make sure /app is on Python module search path
+ENV PYTHONPATH=/app
 
+# Run as non-root (optional)
+RUN useradd --create-home appuser && chown -R appuser /app
+USER appuser
 
-# Default PORT (Railway will provide $PORT at runtime). Keep a default for local runs.
 ENV PORT=8000
-
-# Run uvicorn; use sh -c so $PORT is expanded
 CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT"]
