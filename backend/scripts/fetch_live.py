@@ -1,8 +1,8 @@
 import sys,os,time
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import yfinance as yf
-from db.database import SessionLocal
-from db.models import LivePrice,StockMetadata
+from backend.db.database import SessionLocal
+from backend.db.models import LivePrice,StockMetadata
 from datetime import datetime,timedelta
 
 # POLL_INTERVAL=30

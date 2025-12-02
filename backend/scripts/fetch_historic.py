@@ -1,10 +1,10 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import yfinance as yf
 import pandas as pd
-from db.database import SessionLocal
-from db.models import StockData
+from backend.db.database import SessionLocal
+from backend.db.models import StockData
 from datetime import datetime
 
 def fetch_historical_data(symbol: str, start_date: str, end_date: str):

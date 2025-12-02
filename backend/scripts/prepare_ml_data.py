@@ -1,16 +1,16 @@
 import pandas as pd
 import sys,os
 from datetime import datetime
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from db.models import StockData,LivePrice,TechnicalIndicators
-from db.database import SessionLocal,engine
+
+from backend.db.models import StockData,LivePrice,TechnicalIndicators
+from backend.db.database import SessionLocal,engine
 symbol='RELIANCE.BO'
 
 def prep_data(symbol):
     with SessionLocal() as db:
         hist_df=pd.read_sql(f"SELECT symbol,close AS price,timestamp FROM stock_data WHERE symbol='{symbol}'",engine)
         
-        live_df=pd.read_sql(f"SELECT symbol,price,timestamp FROM live_price WHERE symbol='{symbol}'",engine)
+        live_df=pd.read_sql(f"SELECT symbol,price,timestamp FROM live_price WHERE symbol='{symbol}' ORDER BY timestamp DESC LIMIT 1",engine)
         df = pd.concat([hist_df, live_df], ignore_index=True)
         df = df.sort_values("timestamp").drop_duplicates(subset=["timestamp"]).reset_index()
         
@@ -26,6 +26,7 @@ def prep_data(symbol):
         df['sma100'] = df['price'].rolling(100).mean()
         df['sma200'] = df['price'].rolling(200).mean()
         df=df.dropna()
+        
         
         # OUTPUT_CSV=f"data/ml_{symbol}_data.csv"
         # df.to_csv(OUTPUT_CSV)

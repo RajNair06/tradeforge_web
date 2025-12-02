@@ -1,5 +1,5 @@
 import sys,os,time
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from .fetch_historic import fetch_historical_data
 from .fetch_live import fetch_live
 from .prepare_ml_data import prep_data
@@ -12,6 +12,7 @@ def unify(symbol,start_date=str(two_year_ago),end_date=str(current_date)):
     fetch_historical_data(symbol,start_date,end_date)
     fetch_live(symbol)
     df=prep_data(symbol)
+    
     
     return df
 
