@@ -1,8 +1,8 @@
 import sys,os,time
 
-from fetch_historic import fetch_historical_data
-from fetch_live import fetch_live
-from prepare_ml_data import prep_data
+from .fetch_historic import fetch_historical_data
+from .fetch_live import fetch_live
+from .prepare_ml_data import prep_data
 from datetime import date,timedelta
 
 current_date=date.today()
