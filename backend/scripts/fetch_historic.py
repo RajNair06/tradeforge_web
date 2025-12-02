@@ -3,8 +3,8 @@ import os
 
 import yfinance as yf
 import pandas as pd
-from backend.db.database import SessionLocal
-from backend.db.models import StockData
+from db.database import SessionLocal
+from db.models import StockData
 from datetime import datetime
 
 def fetch_historical_data(symbol: str, start_date: str, end_date: str):

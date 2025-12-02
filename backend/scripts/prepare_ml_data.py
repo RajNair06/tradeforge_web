@@ -2,8 +2,8 @@ import pandas as pd
 import sys,os
 from datetime import datetime
 
-from backend.db.models import StockData,LivePrice,TechnicalIndicators
-from backend.db.database import SessionLocal,engine
+from db.models import StockData,LivePrice,TechnicalIndicators
+from db.database import SessionLocal,engine
 symbol='RELIANCE.BO'
 
 def prep_data(symbol):

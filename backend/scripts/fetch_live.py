@@ -1,8 +1,8 @@
 import sys,os,time
 
 import yfinance as yf
-from backend.db.database import SessionLocal
-from backend.db.models import LivePrice,StockMetadata
+from db.database import SessionLocal
+from db.models import LivePrice,StockMetadata
 from datetime import datetime,timedelta
 
 # POLL_INTERVAL=30
