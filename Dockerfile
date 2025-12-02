@@ -24,4 +24,4 @@ RUN useradd --create-home appuser && chown -R appuser /app
 USER appuser
 
 ENV PORT=8000
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT --log-level info --access-log"]
