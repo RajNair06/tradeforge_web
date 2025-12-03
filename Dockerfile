@@ -4,9 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
 # Install minimal system deps (keep if you have compiled packages)
-RUN apt-get update -y \
- && apt-get install -y --no-install-recommends build-essential gcc ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+
 
 # Copy only requirements first for cache
 COPY backend/requirements.txt /app/requirements.txt
