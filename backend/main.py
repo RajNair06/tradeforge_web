@@ -26,43 +26,38 @@ def paginate_data(data,offset,limit):
     return data[start:end]
 
 
+
 def create_redis_client():
-    # Prefer full URL
-    url = os.environ.get("REDIS_URL") or os.environ.get("REDIS_PUBLIC_URL")
+    url = os.environ.get("REDIS_PUBLIC_URL") or os.environ.get("REDIS_URL")
     if url:
         return Redis.from_url(url, decode_responses=True)
-
-    # Fallback to host/port
-    host = os.environ.get("REDISHOST", "localhost")
-    port = int(os.environ.get("REDISPORT", 6379))
+    host = os.environ.get("REDIS_HOST", "localhost")
+    port = int(os.environ.get("REDIS_PORT", 6379))
     password = os.environ.get("REDIS_PASSWORD")
-    
     return Redis(host=host, port=port, password=password, decode_responses=True)
 
 @app.on_event("startup")
 def startup_event():
-    redis_client = create_redis_client()
-
-    # Verify connectivity
+    redis_client = None
     try:
+        redis_client = create_redis_client()
+        # quick connectivity check
         redis_client.ping()
         app.state.redis = redis_client
     except Exception:
-        # If Redis is essential: uncomment next line
+        # If Redis is essential, uncomment next line to fail startup:
         # raise
-        app.state.redis = None  # continue without Redis
+        app.state.redis = None
 
 @app.on_event("shutdown")
 def shutdown_event():
-    redis_client = getattr(app.state, "redis", None)
-    if redis_client is None:
+    r = getattr(app.state, "redis", None)
+    if r is None:
         return
-
     try:
-        redis_client.close()
+        r.close()
     except Exception:
         pass
-
 
 @app.get('/',response_class=HTMLResponse)
 def main(request: Request):
