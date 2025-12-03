@@ -149,13 +149,25 @@ async def get_live_plotting_data(
     html_cache_key = f'plotting_html_{symbol}_{start_date}_to_{end_date}'
     
     # Try to get cached HTML first (fastest)
-    if use_cache:
-        cached_html = app.state.redis.get(html_cache_key)
-        if cached_html:
-            print("Returning cached HTML")
-            return HTMLResponse(content=cached_html.decode('utf-8'))
+    cached_html = None
+    redis_client = getattr(app.state, "redis", None)
+
+    if use_cache and redis_client is not None:
+        try:
+            cached_html = redis_client.get(html_cache_key)
+        except Exception:
+            cached_html = None
+
+    if cached_html:
+        
+        if isinstance(cached_html, bytes):
+            content = cached_html.decode("utf-8", errors="replace")
+        else:
+            content = str(cached_html)
+        print("Returning cached HTML")
+        return HTMLResponse(content=content)
     
-    # Try to get cached data
+    
     filtered_data = None
     if use_cache:
         cached_data = app.state.redis.get(data_cache_key)
@@ -232,10 +244,14 @@ async def get_live_plotting_data(
     }
     
     # Render template
-    html_content = templates.TemplateResponse("create_plot.html", context).body.decode('utf-8')
-    
-    # Cache the HTML for 60 seconds
-    if use_cache:
-        app.state.redis.setex(html_cache_key, 60, html_content)
-    
+    html_content = templates.TemplateResponse("create_plot.html", context).body.decode("utf-8")
+
+    # Cache the HTML for 60 seconds (store as str)
+    if use_cache and redis_client is not None:
+        try:
+            # ensure we store a str (TemplateResponse gives us str after decode)
+            redis_client.setex(html_cache_key, 60, html_content)
+        except Exception:
+            pass
+
     return HTMLResponse(content=html_content)
