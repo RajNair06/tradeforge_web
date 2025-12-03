@@ -139,16 +139,7 @@ async def get_live_plotting_data(
     Returns an HTML page with Chart.js plot, with caching support
     """
     end_date = date.today()
-    metadata_df=pd.read_sql(f"SELECT * FROM stock_metadata WHERE symbol='{symbol}' LIMIT 1 ",engine)
-
-    print(metadata_df.head())
-    print(metadata_df.columns)
-    name=metadata_df.iloc[0]['name']
-    sector=metadata_df.iloc[0]['sector']
-    industry=metadata_df.iloc[0]['industry']
-    market_cap=metadata_df.iloc[0]['market_cap']
-    pe_ratio=metadata_df.iloc[0]['pe_ratio']
-    currency=metadata_df.iloc[0]['currency']
+    
 
     
 
@@ -212,6 +203,16 @@ async def get_live_plotting_data(
         'lag3': filtered_data['lag3'][last_index] if last_index >= 0 else 0,
         'timestamp': filtered_data['timestamps'][last_index] if last_index >= 0 else 'N/A'
     }
+    metadata_df=pd.read_sql(f"SELECT * FROM stock_metadata WHERE symbol='{symbol}' LIMIT 1 ",engine)
+
+    print(metadata_df.head())
+    print(metadata_df.columns)
+    name=metadata_df.iloc[0]['name']
+    sector=metadata_df.iloc[0]['sector']
+    industry=metadata_df.iloc[0]['industry']
+    market_cap=metadata_df.iloc[0]['market_cap']
+    pe_ratio=metadata_df.iloc[0]['pe_ratio']
+    currency=metadata_df.iloc[0]['currency']
     
     # Prepare context for template
     context = {
