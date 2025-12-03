@@ -25,13 +25,43 @@ def paginate_data(data,offset,limit):
     end=offset+limit
     return data[start:end]
 
+
+def create_redis_client():
+    # Prefer full URL
+    url = os.environ.get("REDIS_URL") or os.environ.get("REDIS_PUBLIC_URL")
+    if url:
+        return Redis.from_url(url, decode_responses=True)
+
+    # Fallback to host/port
+    host = os.environ.get("REDIS_HOST", "localhost")
+    port = int(os.environ.get("REDIS_PORT", 6379))
+    password = os.environ.get("REDIS_PASSWORD")
+    
+    return Redis(host=host, port=port, password=password, decode_responses=True)
+
 @app.on_event("startup")
-async def startup_event():
-    app.state.redis=Redis(host='localhost',port=6379)
+def startup_event():
+    redis_client = create_redis_client()
+
+    # Verify connectivity
+    try:
+        redis_client.ping()
+        app.state.redis = redis_client
+    except Exception:
+        # If Redis is essential: uncomment next line
+        # raise
+        app.state.redis = None  # continue without Redis
 
 @app.on_event("shutdown")
-async def shutdown_event():
-    app.state.redis.close()
+def shutdown_event():
+    redis_client = getattr(app.state, "redis", None)
+    if redis_client is None:
+        return
+
+    try:
+        redis_client.close()
+    except Exception:
+        pass
 
 
 @app.get('/',response_class=HTMLResponse)
