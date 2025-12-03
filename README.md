@@ -2,6 +2,8 @@
 
 A powerful Technical Analysis Platform and API built with FastAPI that provides real-time stock data, technical indicators, and interactive charting for informed trading decisions.
 
+🌐 Live Demo: https://tradeforgeweb-production.up.railway.app/
+
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)
 ![Redis](https://img.shields.io/badge/Redis-Caching-red.svg)
