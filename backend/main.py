@@ -33,8 +33,8 @@ def create_redis_client():
         return Redis.from_url(url, decode_responses=True)
 
     # Fallback to host/port
-    host = os.environ.get("REDIS_HOST", "localhost")
-    port = int(os.environ.get("REDIS_PORT", 6379))
+    host = os.environ.get("REDISHOST", "localhost")
+    port = int(os.environ.get("REDISPORT", 6379))
     password = os.environ.get("REDIS_PASSWORD")
     
     return Redis(host=host, port=port, password=password, decode_responses=True)
