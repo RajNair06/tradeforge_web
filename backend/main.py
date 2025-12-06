@@ -44,10 +44,10 @@ def startup_event():
         # quick connectivity check
         redis_client.ping()
         app.state.redis = redis_client
-    except Exception:
-        # If Redis is essential, uncomment next line to fail startup:
-        # raise
-        app.state.redis = None
+    except Exception as e:
+        
+        print(f"Error connecting to Redis:{e}")
+        
 
 @app.on_event("shutdown")
 def shutdown_event():
@@ -199,8 +199,8 @@ async def get_live_plotting_data(
         }
         
         # Cache the data for 60 seconds
-        if use_cache:
-            app.state.redis.setex(data_cache_key, 60, json.dumps(filtered_data))
+        
+        app.state.redis.setex(data_cache_key, 60, json.dumps(filtered_data))
     
     # Get current data for display
     last_index = len(filtered_data['timestamps']) - 1
