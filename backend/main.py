@@ -3,6 +3,7 @@ from datetime import datetime,timedelta,date
 import pytz
 import json
 import httpx
+from contextlib import asynccontextmanager
 from redis import Redis
 from fastapi import FastAPI,HTTPException,Query,Request
 from fastapi.responses import JSONResponse,HTMLResponse
@@ -17,6 +18,7 @@ from db.database import SessionLocal,engine
 ist_timezone = pytz.timezone('Asia/Kolkata')
 app=FastAPI()
 templates=Jinja2Templates(directory='templates')
+
 
 
 
@@ -36,28 +38,29 @@ def create_redis_client():
     password = os.environ.get("REDIS_PASSWORD")
     return Redis(host=host, port=port, password=password, decode_responses=True)
 
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     redis_client = None
     try:
         redis_client = create_redis_client()
-        # quick connectivity check
-        redis_client.ping()
+        redis_client.ping()  # connectivity check
         app.state.redis = redis_client
+        print("Redis connected successfully.")
     except Exception as e:
-        
-        print(f"Error connecting to Redis:{e}")
-        
+        print(f"Error connecting to Redis: {e}")
+        app.state.redis = None  
 
-@app.on_event("shutdown")
-def shutdown_event():
-    r = getattr(app.state, "redis", None)
-    if r is None:
-        return
-    try:
-        r.close()
-    except Exception:
-        pass
+    yield  
+
+    
+    if redis_client:
+        try:
+            redis_client.close()
+            print("Redis connection closed.")
+        except Exception:
+            pass
+
+
 
 @app.get('/',response_class=HTMLResponse)
 def main(request: Request):
