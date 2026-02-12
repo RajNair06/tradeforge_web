@@ -48,7 +48,7 @@ def paginate_data(data,offset,limit):
 
 
 def create_redis_client():
-    url = os.environ.get("REDIS_PUBLIC_URL") or os.environ.get("REDIS_URL")
+    url =  os.environ.get("REDIS_URL")
 
     if url:
         parsed = urlparse(url)
@@ -59,7 +59,7 @@ def create_redis_client():
             username=parsed.username,
             password=parsed.password,
             decode_responses=True,
-            ssl=True 
+            ssl=False 
         )
 
     host = os.environ.get("REDIS_HOST", "localhost")
