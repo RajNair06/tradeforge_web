@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from redis import Redis
 from fastapi import FastAPI,HTTPException,Query,Request
 from fastapi.responses import JSONResponse,HTMLResponse
-
+from urllib.parse import urlparse
 from fastapi.templating import Jinja2Templates
 import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -49,13 +49,29 @@ def paginate_data(data,offset,limit):
 
 def create_redis_client():
     url = os.environ.get("REDIS_PUBLIC_URL") or os.environ.get("REDIS_URL")
+
     if url:
-        return Redis.from_url(url, decode_responses=True,ssl=True)
+        parsed = urlparse(url)
+
+        return Redis(
+            host=parsed.hostname,
+            port=parsed.port,
+            username=parsed.username,
+            password=parsed.password,
+            decode_responses=True,
+            ssl=True 
+        )
+
     host = os.environ.get("REDIS_HOST", "localhost")
     port = int(os.environ.get("REDIS_PORT", 6379))
     password = os.environ.get("REDIS_PASSWORD")
-    return Redis(host=host, port=port, password=password, decode_responses=True)
 
+    return Redis(
+        host=host,
+        port=port,
+        password=password,
+        decode_responses=True
+    )
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     redis_client = None
