@@ -50,7 +50,7 @@ def paginate_data(data,offset,limit):
 def create_redis_client():
     url = os.environ.get("REDIS_PUBLIC_URL") or os.environ.get("REDIS_URL")
     if url:
-        return Redis.from_url(url, decode_responses=True,ssl_cert_reqs=None)
+        return Redis.from_url(url, decode_responses=True,ssl=True)
     host = os.environ.get("REDIS_HOST", "localhost")
     port = int(os.environ.get("REDIS_PORT", 6379))
     password = os.environ.get("REDIS_PASSWORD")
