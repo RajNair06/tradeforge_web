@@ -17,7 +17,7 @@ from scripts.fetch_historic import fetch_historical_data
 from db.models import TechnicalIndicators
 from db.database import SessionLocal,engine
 ist_timezone = pytz.timezone('Asia/Kolkata')
-app=FastAPI()
+
 templates=Jinja2Templates(directory='templates')
 def setup_logger(level: str = "INFO") -> logging.Logger:
     logger = logging.getLogger("app")
@@ -78,7 +78,7 @@ async def lifespan(app: FastAPI):
         except Exception:
             pass
 
-
+app=FastAPI(lifespan=lifespan)
 
 @app.get('/',response_class=HTMLResponse)
 def main(request: Request):
