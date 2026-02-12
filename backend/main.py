@@ -3,6 +3,7 @@ from datetime import datetime,timedelta,date
 import pytz
 import json
 import httpx
+import logging
 from contextlib import asynccontextmanager
 from redis import Redis
 from fastapi import FastAPI,HTTPException,Query,Request
@@ -18,7 +19,24 @@ from db.database import SessionLocal,engine
 ist_timezone = pytz.timezone('Asia/Kolkata')
 app=FastAPI()
 templates=Jinja2Templates(directory='templates')
+def setup_logger(level: str = "INFO") -> logging.Logger:
+    logger = logging.getLogger("app")
+    logger.setLevel(level)
 
+    if not logger.handlers:  # prevent duplicate handlers on reload
+        handler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(
+            fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
+    logger.propagate = False
+    return logger
+
+
+logger = setup_logger()
 
 
 
@@ -45,9 +63,9 @@ async def lifespan(app: FastAPI):
         redis_client = create_redis_client()
         redis_client.ping()  # connectivity check
         app.state.redis = redis_client
-        print("Redis connected successfully.")
+        logger.info("Redis connected successfully")
     except Exception as e:
-        print(f"Error connecting to Redis: {e}")
+        logger.error("Redis connection failed", exc_info=True)
         app.state.redis = None  
 
     yield  
@@ -56,7 +74,7 @@ async def lifespan(app: FastAPI):
     if redis_client:
         try:
             redis_client.close()
-            print("Redis connection closed.")
+            logger.info("Redis connection closed")
         except Exception:
             pass
 
