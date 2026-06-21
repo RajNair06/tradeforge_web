@@ -1,283 +1,361 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{{ symbol }} - {{ name }} Stock Analysis</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ symbol }} - {{ name }} Stock Analysis | TradeForge</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background: #f5f5f5; 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .header { 
-            text-align: center; 
-            margin-bottom: 20px; 
-            color: #333;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .company-badge {
-            display: inline-block;
-            background: #2E86AB;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin: 0 5px;
-        }
-        .controls { 
-            text-align: center; 
-            margin: 20px 0; 
-        }
-        button {
+
+        .top-bar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
             padding: 12px 24px;
-            background: #2E86AB;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        button:hover {
-            background: #1a5a7a;
-            transform: translateY(-2px);
+
+        .top-bar a {
+            font-size: 13px;
+            color: #6b7280;
+            text-decoration: none;
         }
-        .info-panel {
-            background: white;
-            padding: 25px;
-            margin: 20px 0;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+        .top-bar a:hover {
+            color: #3b82f6;
         }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 18px;
-            margin-top: 18px;
+
+        .top-bar-brand {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
         }
-        .info-item {
-            padding: 18px;
-            background: #f8f9fa;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Company header */
+        .company-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: #fff;
             border-radius: 10px;
-            border-left: 5px solid #2E86AB;
-            transition: transform 0.2s ease;
+            padding: 28px 32px;
+            margin-bottom: 24px;
         }
-        .info-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        }
-        .info-label {
-            font-weight: bold;
-            color: #555;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+
+        .company-header h1 {
+            font-size: 24px;
+            font-weight: 700;
             margin-bottom: 8px;
         }
-        .info-value {
-            font-size: 18px;
-            color: #333;
-            font-weight: bold;
-            line-height: 1.4;
-        }
-        .company-info {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .company-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .company-detail-item {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-        }
-        .chart-container { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin: 20px 0;
-        }
-        canvas {
-            width: 100% !important;
-            height: 550px !important;
-        }
-        .stats-highlight {
+
+        .company-tags {
             display: flex;
-            justify-content: space-around;
-            text-align: center;
-            margin: 20px 0;
+            gap: 8px;
             flex-wrap: wrap;
-            gap: 15px;
+            margin-bottom: 16px;
         }
-        .stat-item {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            min-width: 150px;
-        }
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2E86AB;
-            margin-bottom: 5px;
-        }
-        .stat-label {
+
+        .company-tag {
+            display: inline-block;
             font-size: 12px;
-            color: #666;
+            font-weight: 600;
+            padding: 3px 12px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        .company-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .company-meta-item {
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 12px 16px;
+            backdrop-filter: blur(4px);
+        }
+
+        .company-meta-label {
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 4px;
+        }
+
+        .company-meta-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Indicators grid (consolidated, replaces stats-highlight + info-panel) */
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .indicator-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px 18px;
+            transition: box-shadow 0.15s;
+        }
+
+        .indicator-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .indicator-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .indicator-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .indicator-value.muted {
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .indicator-value.up { color: #059669; }
+        .indicator-value.down { color: #dc2626; }
+
+        /* Chart */
+        .chart-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 560px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        .btn-primary {
+            background: #1e3a5f;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2d5a87;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        /* Refresh icon (CSS-only) */
+        .icon-refresh {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            border-right-color: transparent;
+            animation: spin 0.8s linear infinite;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .icon-refresh.spinning {
+            opacity: 1;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 16px; }
+            .company-header { padding: 20px; }
+            .company-header h1 { font-size: 20px; }
+            .company-meta { grid-template-columns: 1fr 1fr; }
+            .indicators-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-wrapper { height: 360px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <a href="/">&larr; API Documentation</a>
+        <span class="top-bar-brand">TradeForge</span>
+    </div>
+
     <div class="container">
-        <!-- Company Information Header -->
-        <div class="company-info">
-            <h1> {{ name }}</h1>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; margin: 15px 0;">
-                <span class="company-badge">{{ symbol }}</span>
-                {% if sector %}<span class="company-badge" style="background: #A23B72;">{{ sector }}</span>{% endif %}
-                {% if industry %}<span class="company-badge" style="background: #F18F01;">{{ industry }}</span>{% endif %}
-                <span class="company-badge" style="background: #44AF69;">{{ currency }}</span>
+
+        <!-- Company Header -->
+        <div class="company-header">
+            <h1>{{ name }}</h1>
+            <div class="company-tags">
+                <span class="company-tag">{{ symbol }}</span>
+                {% if sector %}<span class="company-tag">{{ sector }}</span>{% endif %}
+                {% if industry %}<span class="company-tag">{{ industry }}</span>{% endif %}
+                <span class="company-tag">{{ currency }}</span>
             </div>
-            
-            <div class="company-details">
+            <div class="company-meta">
                 {% if market_cap %}
-                <div class="company-detail-item">
-                    <div class="info-label" style="color: rgba(255,255,255,0.8);">Market Cap</div>
-                    <div class="info-value" style="color: white;">
-                        {{ currency }} {{ "{:,.0f}".format(market_cap) }}
-                    </div>
+                <div class="company-meta-item">
+                    <div class="company-meta-label">Market Cap</div>
+                    <div class="company-meta-value">{{ currency }} {{ "{:,.0f}".format(market_cap) }}</div>
                 </div>
                 {% endif %}
-                
                 {% if pe_ratio %}
-                <div class="company-detail-item">
-                    <div class="info-label" style="color: rgba(255,255,255,0.8);">P/E Ratio</div>
-                    <div class="info-value" style="color: white;">{{ "%.2f"|format(pe_ratio) }}</div>
+                <div class="company-meta-item">
+                    <div class="company-meta-label">P/E Ratio</div>
+                    <div class="company-meta-value">{{ "%.2f"|format(pe_ratio) }}</div>
                 </div>
                 {% endif %}
-                
-                <div class="company-detail-item">
-                    <div class="info-label" style="color: rgba(255,255,255,0.8);">Analysis Period</div>
-                    <div class="info-value" style="color: white;">{{ start_date }} to {{ end_date }}</div>
+                <div class="company-meta-item">
+                    <div class="company-meta-label">Analysis Period</div>
+                    <div class="company-meta-value">{{ start_date }} &mdash; {{ end_date }}</div>
                 </div>
-                
-                <div class="company-detail-item">
-                    <div class="info-label" style="color: rgba(255,255,255,0.8);">Data Points</div>
-                    <div class="info-value" style="color: white;">{{ data.timestamps|length }} trading days</div>
+                <div class="company-meta-item">
+                    <div class="company-meta-label">Data Points</div>
+                    <div class="company-meta-value">{{ data.timestamps|length }} trading days</div>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Stats Highlight -->
-        <div class="stats-highlight">
-            <div class="stat-item">
-                <div class="stat-value">
-                    {{ currency }} {{ "%.2f"|format(current_data.price) }}
-                </div>
-                <div class="stat-label">Current Price</div>
+        <!-- All Indicators (consolidated grid) -->
+        <div class="indicators-grid">
+            <div class="indicator-card">
+                <div class="indicator-label">Current Price</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.price) }}</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value">{{ currency }} {{ "%.2f"|format(current_data.sma20) }}</div>
-                <div class="stat-label">SMA 20</div>
+            <div class="indicator-card">
+                <div class="indicator-label">SMA 20</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.sma20) }}</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value">{{ currency }} {{ "%.2f"|format(current_data.sma50) }}</div>
-                <div class="stat-label">SMA 50</div>
+            <div class="indicator-card">
+                <div class="indicator-label">SMA 50</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.sma50) }}</div>
             </div>
-            
-        </div>
-        
-        <div class="controls">
-            <button onclick="location.reload()">🔄 Refresh Analysis</button>
-        </div>
-
-        <!-- Current Market Data Panel -->
-        <div class="info-panel">
-            <h2>Current Market Indicators</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Current Price</div>
-                    <div class="info-value">
-                        {{ currency }} {{ "%.2f"|format(current_data.price) }}
-                    </div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">SMA 20 Days</div>
-                    <div class="info-value">{{ currency }} {{ "%.2f"|format(current_data.sma20) }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">SMA 50 Days</div>
-                    <div class="info-value">{{ currency }} {{ "%.2f"|format(current_data.sma50) }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">SMA 100 Days</div>
-                    <div class="info-value">{{ currency }} {{ "%.2f"|format(current_data.sma100) }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">SMA 200 Days</div>
-                    <div class="info-value">{{ currency }} {{ "%.2f"|format(current_data.sma200) }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Price 1 Day Ago</div>
-                    <div class="info-value">{{ currency }} {{ "%.2f"|format(current_data.lag1) }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Price 2 Days Ago</div>
-                    <div class="info-value">{{ currency }} {{ "%.2f"|format(current_data.lag2) }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Price 3 Days Ago</div>
-                    <div class="info-value">{{ currency }} {{ "%.2f"|format(current_data.lag3) }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Last Updated</div>
-                    <div class="info-value">{{ current_data.timestamp }}</div>
-                </div>
+            <div class="indicator-card">
+                <div class="indicator-label">SMA 100</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.sma100) }}</div>
+            </div>
+            <div class="indicator-card">
+                <div class="indicator-label">SMA 200</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.sma200) }}</div>
+            </div>
+            <div class="indicator-card">
+                <div class="indicator-label">Price 1 Day Ago</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.lag1) }}</div>
+            </div>
+            <div class="indicator-card">
+                <div class="indicator-label">Price 2 Days Ago</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.lag2) }}</div>
+            </div>
+            <div class="indicator-card">
+                <div class="indicator-label">Price 3 Days Ago</div>
+                <div class="indicator-value">{{ currency }} {{ "%.2f"|format(current_data.lag3) }}</div>
+            </div>
+            <div class="indicator-card">
+                <div class="indicator-label">Last Updated</div>
+                <div class="indicator-value muted">{{ current_data.timestamp }}</div>
             </div>
         </div>
 
-        <!-- Chart Container -->
-        <div class="chart-container">
-            <canvas id="stockChart"></canvas>
+        <!-- Chart -->
+        <div class="chart-card">
+            <div class="chart-wrapper">
+                <canvas id="stockChart"></canvas>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="refreshData()">
+                    <span class="icon-refresh" id="refreshIcon"></span>
+                    Refresh Data
+                </button>
+            </div>
         </div>
+
     </div>
 
     <script>
         // Data from backend
-        const timestamps = {{ data.timestamps | tojson }};
-        const prices = {{ data.prices | tojson }};
-        const sma20 = {{ data.sma20 | tojson }};
-        const sma50 = {{ data.sma50 | tojson }};
-        const sma100 = {{ data.sma100 | tojson }};
-        const sma200 = {{ data.sma200 | tojson }};
-
-        // Currency code for dynamic display
-        const currencyCode = '{{ currency }}';
-
-        let chart;
+        var timestamps = {{ data.timestamps | tojson }};
+        var prices = {{ data.prices | tojson }};
+        var sma20 = {{ data.sma20 | tojson }};
+        var sma50 = {{ data.sma50 | tojson }};
+        var sma100 = {{ data.sma100 | tojson }};
+        var sma200 = {{ data.sma200 | tojson }};
+        var currencyCode = '{{ currency }}';
+        var chart;
 
         function initChart() {
-            const ctx = document.getElementById('stockChart').getContext('2d');
+            var ctx = document.getElementById('stockChart').getContext('2d');
+
+            // Gradient fill under price line
+            var gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(46, 134, 171, 0.25)');
+            gradient.addColorStop(1, 'rgba(46, 134, 171, 0.01)');
+
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -287,44 +365,51 @@
                             label: 'Stock Price',
                             data: prices,
                             borderColor: '#2E86AB',
-                            backgroundColor: 'rgba(46, 134, 171, 0.1)',
-                            borderWidth: 3,
+                            backgroundColor: gradient,
+                            borderWidth: 2.5,
                             tension: 0.1,
-                            pointRadius: 2,
+                            pointRadius: 1.5,
                             pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#2E86AB',
+                            pointHoverBorderColor: '#fff',
+                            pointHoverBorderWidth: 2,
                             fill: true
                         },
                         {
                             label: 'SMA 20',
                             data: sma20,
                             borderColor: '#A23B72',
-                            borderWidth: 2,
+                            borderWidth: 1.5,
                             tension: 0.1,
-                            pointRadius: 0
+                            pointRadius: 0,
+                            borderDash: [6, 3]
                         },
                         {
                             label: 'SMA 50',
                             data: sma50,
                             borderColor: '#F18F01',
-                            borderWidth: 2,
+                            borderWidth: 1.5,
                             tension: 0.1,
-                            pointRadius: 0
+                            pointRadius: 0,
+                            borderDash: [6, 3]
                         },
                         {
                             label: 'SMA 100',
                             data: sma100,
                             borderColor: '#C73E1D',
-                            borderWidth: 2,
+                            borderWidth: 1.5,
                             tension: 0.1,
-                            pointRadius: 0
+                            pointRadius: 0,
+                            borderDash: [6, 3]
                         },
                         {
                             label: 'SMA 200',
                             data: sma200,
                             borderColor: '#44AF69',
-                            borderWidth: 2,
+                            borderWidth: 1.5,
                             tension: 0.1,
-                            pointRadius: 0
+                            pointRadius: 0,
+                            borderDash: [6, 3]
                         }
                     ]
                 },
@@ -333,66 +418,76 @@
                     maintainAspectRatio: false,
                     scales: {
                         x: {
-                            title: { 
-                                display: true, 
+                            title: {
+                                display: true,
                                 text: 'Trading Days',
-                                font: { size: 14, weight: 'bold' }
+                                font: { size: 13, weight: '600' },
+                                color: '#6b7280'
                             },
-                            grid: { 
-                                color: 'rgba(0,0,0,0.1)',
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)',
                                 drawBorder: false
                             },
                             ticks: {
                                 autoSkip: true,
                                 maxTicksLimit: 20,
-                                maxRotation: 45,
-                                minRotation: 45,
-                                font: { size: 11 }
+                                maxRotation: 40,
+                                minRotation: 40,
+                                font: { size: 11 },
+                                color: '#9ca3af'
                             }
                         },
                         y: {
-                            title: { 
-                                display: true, 
-                                text: `Price (${currencyCode})`,
-                                font: { size: 14, weight: 'bold' }
+                            title: {
+                                display: true,
+                                text: 'Price (' + currencyCode + ')',
+                                font: { size: 13, weight: '600' },
+                                color: '#6b7280'
                             },
                             beginAtZero: false,
-                            grid: { 
-                                color: 'rgba(0,0,0,0.1)',
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)',
                                 drawBorder: false
                             },
                             ticks: {
                                 callback: function(value) {
                                     return currencyCode + ' ' + value.toLocaleString('en-IN');
                                 },
-                                font: { size: 12 }
+                                font: { size: 11 },
+                                color: '#9ca3af'
                             }
                         }
                     },
                     plugins: {
                         title: {
                             display: true,
-                            text: '{{ name }} ({{ symbol }}) - Technical Analysis with Moving Averages',
-                            font: { size: 16, weight: 'bold' },
-                            padding: 20
+                            text: '{{ name }} ({{ symbol }}) - Technical Analysis',
+                            font: { size: 16, weight: '700' },
+                            color: '#1f2937',
+                            padding: { bottom: 16 }
                         },
                         legend: {
                             position: 'top',
+                            align: 'center',
                             labels: {
                                 font: { size: 12 },
-                                padding: 15,
-                                usePointStyle: true
+                                padding: 16,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                color: '#374151'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleFont: { size: 13 },
+                            backgroundColor: 'rgba(17,24,39,0.9)',
+                            titleFont: { size: 13, weight: '600' },
                             bodyFont: { size: 13 },
-                            padding: 12,
+                            padding: 14,
+                            cornerRadius: 8,
                             callbacks: {
                                 label: function(context) {
+                                    if (context.parsed.y == null) return null;
                                     return context.dataset.label + ': ' + currencyCode + ' ' + context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2});
                                 }
                             }
@@ -412,8 +507,14 @@
             });
         }
 
-        // Initialize chart when page loads
+        function refreshData() {
+            var icon = document.getElementById('refreshIcon');
+            if (icon) icon.classList.add('spinning');
+            location.reload();
+        }
+
         document.addEventListener('DOMContentLoaded', initChart);
     </script>
+
 </body>
 </html>
